@@ -1,0 +1,47 @@
+plugins {
+	id 'java'
+    id 'maven-publish'
+}
+
+group = 'io.kals'
+version = '1.0.0'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+    mavenLocal()
+	mavenCentral()
+}
+
+dependencies {
+
+    implementation 'org.springframework.security:spring-security-core'
+    implementation 'org.springframework.security:spring-security-web:6.5.11'
+
+    implementation 'org.springframework.security:spring-security-crypto:7.0.5'
+
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
+    implementation 'org.springframework.boot:spring-boot-starter-security:3.4.13'
+
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.7'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.7'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.7'
+
+    compileOnly 'org.projectlombok:lombok:1.18.38'
+    annotationProcessor 'org.projectlombok:lombok:1.18.38'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.38'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.38'
+}
+
+publishing{
+    publications{
+        mavenJava(MavenPublication){
+            from components.java
+        }
+    }
+}
