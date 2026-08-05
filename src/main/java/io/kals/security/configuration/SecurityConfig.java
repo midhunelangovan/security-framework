@@ -1,5 +1,6 @@
 package io.kals.security.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -16,6 +17,12 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter authenticationFilter;
 
+    @Value(("${spring.allowed.origins}"))
+    private String allowedOrigin;
+
+    @Value(("${spring.allowed.methods}"))
+    private String allowedMethod;
+
     public SecurityConfig(JwtAuthenticationFilter authenticationFilter) {
         this.authenticationFilter = authenticationFilter;
     }
@@ -25,8 +32,8 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://localhost:9000"));
-                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
+                    config.setAllowedOrigins(List.of(allowedOrigin));
+                    config.setAllowedMethods(List.of(allowedMethod));
                     config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true);
                     return config;
