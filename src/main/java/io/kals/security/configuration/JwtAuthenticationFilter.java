@@ -1,6 +1,8 @@
 package io.kals.security.configuration;
 
 import io.jsonwebtoken.security.Keys;
+import io.kals.security.model.User;
+import io.kals.security.service.PermissionService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,16 +22,18 @@ import io.jsonwebtoken.Jwts;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private final PermissionService permissionService;
     @Value("${auth.jwt.secret}")
     private String secretKey;
+
+    public JwtAuthenticationFilter(PermissionService permissionService) {
+        this.permissionService = permissionService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -47,22 +51,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Integer userId = (Integer) claims.get("userId");
             String userName = (String) claims.get("userName");
             String userRole = (String) claims.get("userRole");
-            Integer employeeId = (Integer) claims.get("employeeId");
             Boolean isActive = (Boolean) claims.get("isActive");
             ZonedDateTime lastLoginAt = (ZonedDateTime) claims.get("lastLoginAt");
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + userRole)));
+            String userPermission = permissionService.getUserPermissions(Long.valueOf(userId));
+
+            List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+            authorities.add(
+                    new SimpleGrantedAuthority("ROLE_" + userRole)
+            );
+            if (!userPermission.isBlank()) {
+                for (String permission : userPermission.split(",")) {
+                    authorities.add(new SimpleGrantedAuthority(permission));
+                }
+            }
+
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, authorities);
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-            Map<String, Object> authDetails = new HashMap<>();
-            authDetails.put("userId", userId);
-            authDetails.put("employeeId", employeeId);
-            authDetails.put("userName", userName);
-            authDetails.put("userRole", userRole);
-            authDetails.put("isActive", isActive);
-            authDetails.put("lastLoginAt", lastLoginAt);
+            User user = User.builder()
+                    .userId(userId)
+                    .userName(userName)
+                    .isActive(isActive)
+                    .userRole(userRole)
+                    .lastLoginAt(lastLoginAt)
+                    .build();
 
-            authentication.setDetails(authDetails);
+            authentication.setDetails(user);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);

@@ -1,5 +1,8 @@
 package io.kals.security.utils;
 
+import io.kals.security.model.User;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 /**
@@ -9,33 +12,69 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserUtil {
 
+    public static User getUser() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            return null;
+        }
+
+        Object details = authentication.getDetails();
+
+        if (details instanceof User user) {
+            return user;
+        }
+
+        return null;
+    }
+
 
     /**
      * Gets the username of the current user.
+     *
      * @return the username
      */
     public static String getUserName() {
-        return "systemuser@kal.io";
+        User user = getUser();
+        if (user != null ) {
+            return user.getUserName();
+        }
+        return "";
     }
 
     /**
      * Gets the user ID of the current user.
+     *
      * @return the user ID
      */
     public static Long getUserId() {
-        return 1L;
+        User user = getUser();
+        if (user != null) {
+            return user.getUserId().longValue();
+        }
+        return null;
     }
 
     /**
      * Gets the email address of the current user.
+     *
      * @return the email address
      */
     public static String getUserEmail() {
-        return "systemuser@kal.io";
+        User user = getUser();
+        if (user != null) {
+            return user.getUserName();
+        }
+        return "";
     }
 
-    public static String getUserRoleFromSpringContext(){
-        return "ROLE_ADMIN";
+    public static String getUserRoleFromSpringContext() {
+        User user = getUser();
+        if (user != null) {
+            return user.getUserRole();
+        }
+        return null;
     }
 
 }
