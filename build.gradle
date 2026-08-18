@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'io.kals'
-version = '1.0.0'
+version = '1.0.1'
 
 java {
 	toolchain {
@@ -23,7 +23,7 @@ dependencies {
     implementation 'org.springframework.security:spring-security-web:6.5.11'
 
     implementation 'org.springframework.security:spring-security-crypto:7.0.5'
-
+    implementation 'org.springframework.boot:spring-boot-starter-aop:3.4.13'
     compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
     implementation 'org.springframework.boot:spring-boot-starter-security:3.4.13'
 
